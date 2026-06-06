@@ -1,0 +1,18 @@
+CLGLST (ISPF log and list) updated from V0R9M01 to V0R9M03
+
+clist ISPLOGON: ISPTABL was a concatenation. That is not allowed.
+Fix: &SYSUID..ISP.TLIB allocated to ISPTABL if present.
+
+MAP3270: fixes applied.
+
+Hercules 4.8 installed for Windows 64 and Linux 64
+
+SLIM V2 installed
+
+TSO command VTOC operand EX (extents) fixed.
+
+Archiver upgraded from 6.1.8 to 6.1.9.
+
+Archiver extensions updated from 1.2.1 to 1.2.2.
+
+Member APPL#ALL in SYS2.JCLLIB submits the jobs now with TSO.
