@@ -1,0 +1,6 @@
+# Local Db2 container volume
+db2-data/
+
+# Local environment files
+.env
+.env_list

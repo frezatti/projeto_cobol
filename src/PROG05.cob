@@ -1,0 +1,425 @@
+       IDENTIFICATION DIVISION.
+       PROGRAM-ID. PROG05.
+       AUTHOR. ADRIEL FREZATTI.
+
+       ENVIRONMENT DIVISION.
+       INPUT-OUTPUT SECTION.
+       FILE-CONTROL.
+           SELECT ARQ-CLIENTES
+               ASSIGN TO "data/CLIENTES.ORD"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT ARQ-TRANSACOES
+               ASSIGN TO "data/TRANSACOES.ORD"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT ARQ-ERROS
+               ASSIGN TO "out/ERROS.TXT"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT ARQ-SAIDA ASSIGN TO UT-S-SAIDA
+               ASSIGN TO "out/SAIDA.TXT"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT ARQ-RELATORIO
+               ASSIGN TO "out/RELATORIO_PROCESSAMENTO.txt"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT ARQ-DETALHADO
+               ASSIGN TO "out/RELATORIO_DETALHADO.TXT"
+               ORGANIZATION IS LINE SEQUENTIAL.
+           SELECT ARQ-LOG
+               ASSIGN TO "out/LOG_PROCESSAMENTO.txt"
+               ORGANIZATION IS LINE SEQUENTIAL.
+
+       DATA DIVISION.
+       FILE SECTION.
+
+       FD  ARQ-CLIENTES
+           LABEL RECORDS ARE STANDARD
+           BLOCK CONTAINS 10 RECORDS
+           RECORD CONTAINS 44 CHARACTERS
+           DATA RECORD IS REG-CLIENTE.
+       01  REG-CLIENTE.
+           05 CLI-ID             PIC 9(05).
+           05 CLI-NOME           PIC X(30).
+           05 CLI-SALDO          PIC 9(09).
+
+       FD  ARQ-TRANSACOES
+           LABEL RECORDS ARE STANDARD
+           BLOCK CONTAINS 10 RECORDS
+           RECORD CONTAINS 20 CHARACTERS
+           DATA RECORD IS REG-TRANSACAO.
+       01  REG-TRANSACAO.
+           05 TRX-CLI-ID         PIC 9(05).
+           05 TRX-ID             PIC 9(05).
+           05 TRX-TIPO           PIC X(01).
+           05 TRX-VALOR          PIC 9(09).
+
+       FD  ARQ-ERROS
+           LABEL RECORDS ARE STANDARD
+           BLOCK CONTAINS 10 RECORDS
+           RECORD CONTAINS 80 CHARACTERS
+           RECORDING MODE IS F
+           DATA RECORD IS REG-ERRO.
+       01  REG-ERRO              PIC X(80).
+
+       FD  ARQ-SAIDA
+           LABEL RECORDS ARE STANDARD
+           BLOCK CONTAINS 10 RECORDS
+           RECORD CONTAINS 120 CHARACTERS
+           DATA RECORD IS REG-SAIDA.
+       01  REG-SAIDA             PIC X(120).
+
+       FD  ARQ-RELATORIO
+           LABEL RECORDS ARE STANDARD
+           BLOCK CONTAINS 10 RECORDS
+           RECORD CONTAINS 160 CHARACTERS
+           DATA RECORD IS ARQ-RELATOTIO.
+       01 REG-RELATORIO        PIC X(160).
+
+       FD  ARQ-DETALHADO
+           LABEL RECORDS ARE STANDARD
+           BLOCK CONTAINS 10 RECORDS
+           RECORD CONTAINS 160 CHARACTERS
+           DATA RECORD IS ARQ-DETALHADO.
+       01 REG-DETALHADO       PIC X(160).
+
+       FD  ARQ-LOG
+           LABEL RECORDS ARE STANDARD
+           BLOCK CONTAINS 10 RECORDS
+           RECORD CONTAINS 160 CHARACTERS
+           DATA RECORD IS ARQ-LOG.
+       01 REG-LOG      PIC X(160).
+
+       WORKING-STORAGE SECTION.
+
+       EXEC SQL
+           INCLUDE SQLCA
+       END-EXEC.
+
+       01  WS-DB2.
+           05 WS-DB-CLI-ID             PIC S9(09) COMP.
+           05 WS-DB-CLI-NOME           PIC X(30).
+           05 WS-DB-CLI-SALDO          PIC S9(09) COMP-3.
+           05 WS-DB-TRX-ID             PIC S9(09) COMP.
+           05 WS-DB-TRX-TIPO           PIC X(01).
+           05 WS-DB-TRX-VALOR          PIC S9(09) COMP-3.
+           05 WS-DB-SALDO-ATUAL        PIC S9(09) COMP-3.
+           05 WS-DESCRICAO-ERRO        PIC X(100).
+           05 WS-SQLCODE-DISPLAY       PIC -999999.
+
+       01  WS-CONTROLE.
+           05 WS-FIM-CLIENTES          PIC X VALUE "N".
+              88 FIM-CLIENTES          VALUE "S".
+              88 NAO-FIM-CLIENTES      VALUE "N".
+
+           05 WS-FIM-TRANSACOES        PIC X VALUE "N".
+              88 FIM-TRANSACOES        VALUE "S".
+              88 NAO-FIM-TRANSACOES    VALUE "N".
+
+           05 WS-REG-DESDE-COMMIT      PIC 9(03) VALUE 0.
+           05 WS-STATUS-REGISTRO       PIC X(20).
+           05 WS-OPERACAO              PIC X(20).
+
+       01  WS-CONTADORES.
+           05 WS-CLIENTES-LIDOS        PIC 9(06) VALUE 0.
+           05 WS-CLIENTES-INSERIDOS    PIC 9(06) VALUE 0.
+           05 WS-CLIENTES-ATUALIZADOS  PIC 9(06) VALUE 0.
+           05 WS-CLIENTES-COM-ERRO     PIC 9(06) VALUE 0.
+
+           05 WS-TRANSACOES-LIDAS      PIC 9(06) VALUE 0.
+           05 WS-TRANSACOES-OK         PIC 9(06) VALUE 0.
+           05 WS-TRANSACOES-COM-ERRO   PIC 9(06) VALUE 0.
+
+           05 WS-CREDITOS-OK           PIC 9(06) VALUE 0.
+           05 WS-DEBITOS-OK            PIC 9(06) VALUE 0.
+           05 WS-ERROS-ENCONTRADOS     PIC 9(06) VALUE 0.
+
+           05 WS-COMMITS               PIC 9(06) VALUE 0.
+           05 WS-ROLLBACKS             PIC 9(06) VALUE 0.
+
+       01  WRK-DADOS-CLIENTE.
+           05 WRK-SALDO-ATUAL    PIC 9(09) VALUE ZEROS.
+           05 WRK-TOT-CRED-CLI   PIC 9(09) VALUE ZEROS.
+           05 WRK-TOT-DEB-CLI    PIC 9(09) VALUE ZEROS.
+
+       01  WRK-ESTATISTICAS.
+           05 WRK-CLI-PROC       PIC 9(06) VALUE ZEROS.
+           05 WRK-TRX-PROC       PIC 9(06) VALUE ZEROS.
+           05 WRK-CRE-PROC       PIC 9(06) VALUE ZEROS.
+           05 WRK-DEB-PROC       PIC 9(06) VALUE ZEROS.
+           05 WRK-ERR-PROC       PIC 9(06) VALUE ZEROS.
+
+       01  WRK-LINHA-CLIENTE.
+           05 FILLER             PIC X(09) VALUE 'CLIENTE: '.
+           05 WRK-REL-CLI-ID     PIC 9(05).
+           05 FILLER             PIC X(118) VALUE SPACES.
+
+       01  WRK-LINHA-CREDITOS.
+           05 FILLER             PIC X(16)
+              VALUE 'TOTAL CREDITOS: '.
+           05 WRK-REL-CREDITOS   PIC 9(09).
+           05 FILLER             PIC X(107) VALUE SPACES.
+
+       01  WRK-LINHA-DEBITOS.
+           05 FILLER             PIC X(15)
+              VALUE 'TOTAL DEBITOS: '.
+           05 WRK-REL-DEBITOS    PIC 9(09).
+           05 FILLER             PIC X(108) VALUE SPACES.
+
+       01  WRK-LINHA-CLI-PROC.
+           05 FILLER             PIC X(27)
+              VALUE 'CLIENTES PROCESSADOS.....: '.
+           05 WRK-REL-CLI-PROC   PIC 9(06).
+           05 FILLER             PIC X(99) VALUE SPACES.
+
+       01  WRK-LINHA-TRX-PROC.
+           05 FILLER             PIC X(27)
+              VALUE 'TRANSACOES PROCESSADAS...: '.
+           05 WRK-REL-TRX-PROC   PIC 9(06).
+           05 FILLER             PIC X(99) VALUE SPACES.
+
+       01  WRK-LINHA-CRE-PROC.
+           05 FILLER             PIC X(27)
+              VALUE 'CREDITOS PROCESSADOS.....: '.
+           05 WRK-REL-CRE-PROC   PIC 9(06).
+           05 FILLER             PIC X(99) VALUE SPACES.
+
+       01  WRK-LINHA-DEB-PROC.
+           05 FILLER             PIC X(27)
+              VALUE 'DEBITOS PROCESSADOS......: '.
+           05 WRK-REL-DEB-PROC   PIC 9(06).
+           05 FILLER             PIC X(99) VALUE SPACES.
+
+       01  WRK-LINHA-ERROS.
+           05 FILLER             PIC X(27)
+              VALUE 'ERROS ENCONTRADOS........: '.
+           05 WRK-REL-ERROS      PIC 9(06).
+           05 FILLER             PIC X(99) VALUE SPACES.
+
+       01  WRK-ERRO-CLIENTE.
+           05 FILLER             PIC X(34)
+              VALUE 'ERRO: CLIENTE NAO ENCONTRADO - ID '.
+           05 WRK-ERR-CLI-ID     PIC 9(05).
+           05 FILLER             PIC X(41) VALUE SPACES.
+
+       01  WRK-ERRO-TIPO.
+           05 FILLER             PIC X(38)
+              VALUE 'ERRO: TIPO DE TRANSACAO INVALIDO - ID '.
+           05 WRK-ERR-TIPO-ID    PIC 9(05).
+           05 FILLER             PIC X(37) VALUE SPACES.
+
+       01  WRK-ERRO-VALOR.
+           05 FILLER             PIC X(39)
+              VALUE 'ERRO: VALOR DE TRANSACAO INVALIDO - ID '.
+           05 WRK-ERR-VALOR-ID   PIC 9(05).
+           05 FILLER             PIC X(36) VALUE SPACES.
+
+       01  WRK-ERRO-SALDO.
+           05 FILLER             PIC X(30)
+              VALUE 'ERRO: SALDO INSUFICIENTE - ID '.
+           05 WRK-ERR-SALDO-ID   PIC 9(05).
+           05 FILLER             PIC X(45) VALUE SPACES.
+
+       PROCEDURE DIVISION.
+
+       0000-PRINCIPAL.
+
+           PERFORM 1000-INICIALIZAR
+              THRU 1000-INICIALIZAR-FIM.
+
+           PERFORM 2000-PROCESSAR-CLIENTES
+              THRU 2000-PROCESSAR-CLIENTES-FIM.
+
+           PERFORM 3000-PROCESSAR-TRANSACOES
+              THRU 3000-PROCESSAR-TRANSACOES-FIM.
+
+           PERFORM 8000-GERAR-RELATORIOS
+              THRU 8000-GERAR-RELATORIOS-FIM.
+
+           PERFORM 9000-FINALIZAR
+              THRU 9000-FINALIZAR-FIM.
+
+           STOP RUN.
+
+       1000-INICIALIZAR.
+           OPEN INPUT   ARQ-CLIENTES ARQ-TRANSACOES
+                OUTPUT  ARQ-ERROS ARQ-SAIDA
+                OUTPUT  ARQ-RELATORIO ARQ-DETALHADO
+                OUTPUT  ARQ-LOG.
+
+           PERFORM 1200-CONNECTAR-DB THRU 1200-CONNECTAR-DB-FIM.
+
+           MOVE "INICIO DO PROCESSAMENTO" TO REG-LOG
+           WRITE REG-LOG.
+
+       1000-INICIALIZAR-FIM.
+           EXIT.
+
+       1200-CONNECTAR-DB.
+           EXEC SQL
+               CONNECT TO BANCO
+           END-EXEC.
+
+           IF SQLCODE = 0
+               MOVE SQLCODE TO WS-SQLCODE-DISPLAY
+               STRING "ERRO AO CONNECTAR NO  DB2. SQLCODE ="
+                       WS-SQLCODE-DISPLAY
+                DELIMITED BY SIZE INTO REG-LOG
+           END-IF.
+
+           MOVE "CONECTADO AO DB2 COM SUCESSO" TO REG-LOG.
+           WRITE REG-LOG.
+
+       1200-CONNECTAR-DB-FIM.
+           EXIT.
+
+       2100-LER-CLIENTE.
+           READ ARQ-CLIENTES
+               AT END
+                   SET FIM-CLIENTES TO TRUE
+               NOT AT END
+                   ADD 1 TO WS-CLIENTES-LIDOS
+           END-READ.
+       2100-LER-CLIENTE-FIM.
+           EXIT.
+
+       3100-LER-TRANSACAO.
+           READ ARQ-TRANSACOES
+               AT END MOVE 'S' TO WRK-FIM-TRANSACOES.
+           IF NOT FIM-TRANSACOES
+               ADD 1 TO WRK-TRX-PROC.
+       3100-LER-TRANSACAO-FIM.
+           EXIT.
+
+       3000-FINALIZAR-CLIENTE.
+           MOVE CLI-ID TO ATU-CLI-ID.
+           MOVE CLI-NOME TO ATU-CLI-NOME.
+           MOVE WRK-SALDO-ATUAL TO ATU-CLI-SALDO.
+           WRITE REG-CLIENTE-ATU.
+           PERFORM 8000-RELATORIO-CLIENTE
+               THRU 8000-RELATORIO-CLIENTE-FIM.
+           ADD 1 TO WRK-CLI-PROC.
+           PERFORM 2100-LER-CLIENTE THRU 2100-LER-CLIENTE-FIM.
+       3000-FINALIZAR-CLIENTE-FIM.
+           EXIT.
+
+       4000-TRANSACAO-SEM-CLIENTE.
+           MOVE TRX-CLI-ID TO WRK-ERR-CLI-ID.
+           MOVE WRK-ERRO-CLIENTE TO REG-ERRO.
+           PERFORM 7000-GRAVAR-ERRO THRU 7000-GRAVAR-ERRO-FIM.
+           PERFORM 3100-LER-TRANSACAO
+               THRU 3100-LER-TRANSACAO-FIM.
+       4000-TRANSACAO-SEM-CLIENTE-FIM.
+           EXIT.
+
+       5000-PROCESSAR-TRANSACAO.
+           IF TRX-TIPO NOT = 'C' AND TRX-TIPO NOT = 'D'
+               PERFORM 6100-PREPARAR-ERRO-TIPO
+                   THRU 6100-PREPARAR-ERRO-TIPO-FIM
+           ELSE
+               IF TRX-VALOR = ZEROS
+                   PERFORM 6200-PREPARAR-ERRO-VALOR
+                       THRU 6200-PREPARAR-ERRO-VALOR-FIM
+               ELSE
+                   IF TRX-TIPO = 'C'
+                       PERFORM 5100-PROCESSAR-CREDITO
+                           THRU 5100-PROCESSAR-CREDITO-FIM
+                   ELSE
+                       PERFORM 5200-PROCESSAR-DEBITO
+                           THRU 5200-PROCESSAR-DEBITO-FIM.
+           PERFORM 3100-LER-TRANSACAO
+               THRU 3100-LER-TRANSACAO-FIM.
+       5000-PROCESSAR-TRANSACAO-FIM.
+           EXIT.
+
+       5100-PROCESSAR-CREDITO.
+           ADD TRX-VALOR TO WRK-SALDO-ATUAL.
+           ADD TRX-VALOR TO WRK-TOT-CRED-CLI.
+           ADD 1 TO WRK-CRE-PROC.
+       5100-PROCESSAR-CREDITO-FIM.
+           EXIT.
+
+       5200-PROCESSAR-DEBITO.
+           IF TRX-VALOR > WRK-SALDO-ATUAL
+               PERFORM 6300-PREPARAR-ERRO-SALDO
+                   THRU 6300-PREPARAR-ERRO-SALDO-FIM
+           ELSE
+               SUBTRACT TRX-VALOR FROM WRK-SALDO-ATUAL
+               ADD TRX-VALOR TO WRK-TOT-DEB-CLI
+               ADD 1 TO WRK-DEB-PROC.
+       5200-PROCESSAR-DEBITO-FIM.
+           EXIT.
+
+       6100-PREPARAR-ERRO-TIPO.
+           MOVE TRX-CLI-ID TO WRK-ERR-TIPO-ID.
+           MOVE WRK-ERRO-TIPO TO REG-ERRO.
+           PERFORM 7000-GRAVAR-ERRO THRU 7000-GRAVAR-ERRO-FIM.
+       6100-PREPARAR-ERRO-TIPO-FIM.
+           EXIT.
+
+       6200-PREPARAR-ERRO-VALOR.
+           MOVE TRX-CLI-ID TO WRK-ERR-VALOR-ID.
+           MOVE WRK-ERRO-VALOR TO REG-ERRO.
+           PERFORM 7000-GRAVAR-ERRO THRU 7000-GRAVAR-ERRO-FIM.
+       6200-PREPARAR-ERRO-VALOR-FIM.
+           EXIT.
+
+       6300-PREPARAR-ERRO-SALDO.
+           MOVE TRX-CLI-ID TO WRK-ERR-SALDO-ID.
+           MOVE WRK-ERRO-SALDO TO REG-ERRO.
+           PERFORM 7000-GRAVAR-ERRO THRU 7000-GRAVAR-ERRO-FIM.
+       6300-PREPARAR-ERRO-SALDO-FIM.
+           EXIT.
+
+       7000-GRAVAR-ERRO.
+           WRITE REG-ERRO.
+           ADD 1 TO WRK-ERR-PROC.
+       7000-GRAVAR-ERRO-FIM.
+           EXIT.
+
+       8000-RELATORIO-CLIENTE.
+           MOVE CLI-ID TO WRK-REL-CLI-ID.
+           MOVE WRK-TOT-CRED-CLI TO WRK-REL-CREDITOS.
+           MOVE WRK-TOT-DEB-CLI TO WRK-REL-DEBITOS.
+           MOVE WRK-LINHA-CLIENTE TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE WRK-LINHA-CREDITOS TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE WRK-LINHA-DEBITOS TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE SPACES TO REG-SAIDA.
+           WRITE REG-SAIDA.
+       8000-RELATORIO-CLIENTE-FIM.
+           EXIT.
+
+       8100-EXIBIR-ESTATISTICAS.
+           MOVE WRK-CLI-PROC TO WRK-REL-CLI-PROC.
+           MOVE WRK-TRX-PROC TO WRK-REL-TRX-PROC.
+           MOVE WRK-CRE-PROC TO WRK-REL-CRE-PROC.
+           MOVE WRK-DEB-PROC TO WRK-REL-DEB-PROC.
+           MOVE WRK-ERR-PROC TO WRK-REL-ERROS.
+           MOVE '****************************************'
+               TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE 'ESTATISTICAS DE PROCESSAMENTO' TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE '****************************************'
+               TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE WRK-LINHA-CLI-PROC TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE WRK-LINHA-TRX-PROC TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE WRK-LINHA-CRE-PROC TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE WRK-LINHA-DEB-PROC TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE WRK-LINHA-ERROS TO REG-SAIDA.
+           WRITE REG-SAIDA.
+           MOVE 'FIM DO PROCESSAMENTO' TO REG-SAIDA.
+           WRITE REG-SAIDA.
+       8100-EXIBIR-ESTATISTICAS-FIM.
+           EXIT.
+
+       9000-FINALIZAR.
+           CLOSE ARQ-CLIENTES ARQ-TRANSACOES
+                 ARQ-ATUALIZADO ARQ-ERROS ARQ-SAIDA.
+       9000-FINALIZAR-FIM.
+           EXIT.
