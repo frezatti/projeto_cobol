@@ -1,112 +1,24 @@
-# Projeto 6 - COBOL com Db2
-
-**Aluno:** Adriel Frezatti  
-**Projeto:** COBOL + Db2 / Semana 8  
-**Ambiente usado:** Linux + Podman + IBM Db2 11.5 + GnuCOBOL
-
----
-
 # Resultados finais da execução
 
-> Esta seção deve ficar no começo do README para facilitar a correção.  
-> Os arquivos finais foram copiados do container para as pastas locais:
->
-> ```text
-> out_from_container/
-> db_state_from_container/
-> ```
+Os resultados finais estão salvos no próprio repositório.
 
 ## Arquivos de saída do programa
 
-### `out_from_container/LOG_PROCESSAMENTO.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-out_from_container/LOG_PROCESSAMENTO.TXT
-```
-
-### `out_from_container/SAIDA.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-out_from_container/SAIDA.TXT
-```
-
-### `out_from_container/ERROS.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-out_from_container/ERROS.TXT
-```
-
-### `out_from_container/RELATORIO_PROCESSAMENTO.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-out_from_container/RELATORIO_PROCESSAMENTO.TXT
-```
-
-### `out_from_container/RELATORIO_DETALHADO.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-out_from_container/RELATORIO_DETALHADO.TXT
-```
-
----
+- [LOG_PROCESSAMENTO.TXT](out_from_container/LOG_PROCESSAMENTO.TXT)
+- [SAIDA.TXT](out_from_container/SAIDA.TXT)
+- [ERROS.TXT](out_from_container/ERROS.TXT)
+- [RELATORIO_PROCESSAMENTO.TXT](out_from_container/RELATORIO_PROCESSAMENTO.TXT)
+- [RELATORIO_DETALHADO.TXT](out_from_container/RELATORIO_DETALHADO.TXT)
 
 ## Estado final do banco Db2
 
-### `db_state_from_container/00_CONNECT.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-db_state_from_container/00_CONNECT.TXT
-```
-
-### `db_state_from_container/01_CLIENTES.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-db_state_from_container/01_CLIENTES.TXT
-```
-
-### `db_state_from_container/02_TRANSACOES.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-db_state_from_container/02_TRANSACOES.TXT
-```
-
-### `db_state_from_container/03_ERROS_PROCESSAMENTO.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-db_state_from_container/03_ERROS_PROCESSAMENTO.TXT
-```
-
-### `db_state_from_container/04_COUNT_CLIENTES.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-db_state_from_container/04_COUNT_CLIENTES.TXT
-```
-
-### `db_state_from_container/05_COUNT_TRANSACOES.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-db_state_from_container/05_COUNT_TRANSACOES.TXT
-```
-
-### `db_state_from_container/06_COUNT_ERROS.TXT`
-
-```text
-COLE AQUI O CONTEÚDO FINAL DE:
-db_state_from_container/06_COUNT_ERROS.TXT
-```
-
----
+- [00_CONNECT.TXT](db_state_from_container/00_CONNECT.TXT)
+- [01_CLIENTES.TXT](db_state_from_container/01_CLIENTES.TXT)
+- [02_TRANSACOES.TXT](db_state_from_container/02_TRANSACOES.TXT)
+- [03_ERROS_PROCESSAMENTO.TXT](db_state_from_container/03_ERROS_PROCESSAMENTO.TXT)
+- [04_COUNT_CLIENTES.TXT](db_state_from_container/04_COUNT_CLIENTES.TXT)
+- [05_COUNT_TRANSACOES.TXT](db_state_from_container/05_COUNT_TRANSACOES.TXT)
+- [06_COUNT_ERROS.TXT](db_state_from_container/06_COUNT_ERROS.TXT)
 
 # Objetivo do projeto
 
