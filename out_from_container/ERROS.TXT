@@ -1,0 +1,10 @@
+ERRO: TIPO DE TRANSACAO INVALIDO                                                                           - CLI_ID 0012
+ERRO: VALOR DE TRANSACAO ZERADO                                                                            - CLI_ID 0012
+ERRO: SALDO INSUFICIENTE                                                                                   - CLI_ID 0078
+ERRO: SALDO INSUFICIENTE                                                                                   - CLI_ID 0088
+ERRO: TIPO DE TRANSACAO INVALIDO                                                                           - CLI_ID 0101
+ERRO: SALDO INSUFICIENTE                                                                                   - CLI_ID 0111
+ERRO: VALOR DE TRANSACAO ZERADO                                                                            - CLI_ID 0123
+ERRO: SALDO INSUFICIENTE                                                                                   - CLI_ID 0404
+ERRO: CLIENTE INEXISTENTE                                                                                  - CLI_ID 0555
+ERRO: CLIENTE INEXISTENTE                                                                                  - CLI_ID 9999

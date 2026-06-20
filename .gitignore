@@ -1,6 +1,3 @@
-# Local Db2 container volume
+# Local Db2 copied runtime libraries
+lib/db2/
 db2-data/
-
-# Local environment files
-.env
-.env_list

@@ -1,0 +1,16 @@
+
+CLI_ID      CLI_NOME                       CLI_SALDO   DT_ATUALIZACAO
+----------- ------------------------------ ----------- --------------
+        123 JOAO SILVA                          10300. 06/20/2026    
+        456 MARIA SOUZA                         23500. 06/20/2026    
+        789 CARLOS PEREIRA                       4600. 06/20/2026    
+        888 ANA LIMA                             4000. 06/20/2026    
+       1010 PAULO MENDES                        10500. 06/20/2026    
+       1111 FERNANDA COSTA                          0. 06/20/2026    
+       1234 LUCAS ALMEIDA                       16000. 06/20/2026    
+       2020 BEATRIZ ROCHA                       18250. 06/20/2026    
+       3030 RAFAEL SANTOS                        7000. 06/20/2026    
+       4040 CAMILA FREITAS                      16000. 06/20/2026    
+
+  10 record(s) selected.
+

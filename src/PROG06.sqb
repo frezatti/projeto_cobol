@@ -136,6 +136,9 @@
            BEGIN DECLARE SECTION
        END-EXEC.
 
+       01  WS-DB-USER              PIC X(08) VALUE "db2inst1".
+       01  WS-DB-PASS              PIC X(30) VALUE "Db2Passw0rd!".
+
        01  WS-DB-CLI-ID             PIC S9(09) COMP-5.
        01  WS-DB-CLI-NOME           PIC X(30).
        01  WS-DB-CLI-SALDO          PIC S9(09) COMP-3.
