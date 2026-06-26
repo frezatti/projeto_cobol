@@ -1,0 +1,16 @@
+#!/bin/bash
+#**********************************************************************
+#***                                                                ***
+#*** Script:  set_console_mode                                      ***
+#***                                                                ***
+#*** Purpose: Activate console mode (TK4- unattended operations)    ***
+#***                                                                ***
+#*** Updated: 2025/04/22                                            ***
+#***                                                                ***
+#**********************************************************************
+if [ -f mode ]; then
+	rm mode
+fi
+echo "CONSOLE">mode
+echo "Hercules console mode activated for unattended operations mvs"
+read -p "Press any key to continue..."
