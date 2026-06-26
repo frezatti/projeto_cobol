@@ -1,7 +1,0 @@
-
-QTD_CLIENTES
-------------
-          10
-
-  1 record(s) selected.
-

@@ -1,7 +1,0 @@
-
-   Database Connection Information
-
- Database server        = DB2/LINUXX8664 11.5.9.0
- SQL authorization ID   = DB2INST1
- Local database alias   = BANCO
-
